@@ -1,4 +1,4 @@
--module(chap4).
+-module(lib_misc).
 
 -export([my_tuple_to_list/1, my_time_func/1]).
 
