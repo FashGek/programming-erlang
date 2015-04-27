@@ -12,7 +12,8 @@ my_tuple_to_list(Size, T, Acc) ->
     my_tuple_to_list(Size - 1, T, [Element|Acc]).
 
 my_time_func(F) ->
-    {_, StartSec, StartMicroSec} = now(),
+    Start = now(),
     F(),
-    {_, EndSec, EndMicroSec} = now(),
-    {EndSec - StartSec, abs(EndMicroSec - StartMicroSec)}.
+    End = now(),
+    timer:now_diff(End, Start).
+
