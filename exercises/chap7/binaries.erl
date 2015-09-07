@@ -1,6 +1,6 @@
 -module(binaries).
 
--export([reverse/1, reverse2/1, term_to_packet/1]).
+-export([reverse/1, reverse2/1, term_to_packet/1, packet_to_term/1]).
 
 % First exercise
 
@@ -28,3 +28,8 @@ term_to_packet(Term) ->
     Binary = term_to_binary(Term),
     Length = byte_size(Binary),
     <<Length:32/integer, Binary:Length/binary>>.
+
+% Third exercise
+
+packet_to_term(<<Length:32/integer, Binary:Length/binary>>) ->
+    binary_to_term(Binary).
