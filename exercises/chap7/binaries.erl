@@ -39,3 +39,13 @@ test_packet_to_term() ->
     Packet = term_to_packet(Term),
     Term = packet_to_term(Packet),
     test_pass.
+
+% Fifth exercise
+
+reverse_bits(Bin) ->
+    reverse_bits(Bin, <<>>).
+
+reverse_bits(<<>>, Reversed) ->
+    Reversed;
+reverse_bits(<<First:1, Rest/bitstring>>, Reversed) ->
+    reverse_bits(Rest, <<First, Reversed/bitstring>>).
