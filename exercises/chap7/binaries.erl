@@ -1,6 +1,6 @@
 -module(binaries).
 
--export([reverse/1, term_to_packet/1, packet_to_term/1, reverse_bits/1]).
+-export([reverse/1, reverse2/1, term_to_packet/1, packet_to_term/1, reverse_bits/1]).
 -export([test_term_to_packet/0, test_packet_to_term/0]).
 
 % First exercise
@@ -12,6 +12,9 @@ reverse(<<>>, Reversed) ->
     Reversed;
 reverse(<<Head:1/binary, Rest/binary>>, Reversed) ->
     reverse(Rest, <<Head/binary, Reversed/binary>>).
+
+reverse2(Bin) when is_binary(Bin) ->
+    list_to_binary(lists:reverse(binary_to_list(Bin))).
 
 % Second exercise
 
