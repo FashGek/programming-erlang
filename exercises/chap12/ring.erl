@@ -1,3 +1,6 @@
+%% TODO
+%% - gproc for register processes
+
 -module(ring).
 
 -export([benchmark_ring/2]).
@@ -38,16 +41,13 @@ ring_process(Id, MaxHops) ->
             ring_process(Id, MaxHops)
     end.
 
-forward_message_from(Id, Hop, MaxHops, Message) ->
-    case Hop + 1 < MaxHops of
-        true ->
-            NextId = next_of(Id, MaxHops),
-            NextName = process_name_for(NextId),
-            Next = whereis(NextName),
-            Next ! {message, Hop + 1, Message};
-        _ ->
-            false
-    end.
+forward_message_from(Id, Hop, MaxHops, Message) when Hop + 1 < MaxHops ->
+    NextId = next_of(Id, MaxHops),
+    NextName = process_name_for(NextId),
+    Next = whereis(NextName),
+    Next ! {message, Hop + 1, Message};
+forward_message_from(_, _, _, _) ->
+    false.
 
 process_name_for(Number) ->
     list_to_atom("p" ++ integer_to_list(Number)).
