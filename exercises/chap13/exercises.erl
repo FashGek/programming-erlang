@@ -5,6 +5,9 @@
 
 -export([on_exit/2]).
 
+-export([my_spawn/4]).
+-export([my_spawn_monitor/4]).
+
 -export([die_after/1]).
 
 
@@ -36,6 +39,24 @@ on_exit(Pid, Fun) ->
                           Fun(Why, Duration)
                   end
           end).
+
+%% Exercise 3
+
+my_spawn(Mod, Func, Args, Time) ->
+    spawn(?MODULE, my_spawn_monitor, [Mod, Func, Args, Time]).
+
+my_spawn_monitor(Mod, Func, Args, Time) ->
+    {Pid, Ref} = spawn_monitor(Mod, Func, Args),
+    Start = erlang:monotonic_time(),
+    receive
+        {'DOWN', Ref, process, Pid, Why} ->
+            Stop = erlang:monotonic_time(),
+            Duration = erlang:convert_time_unit(Stop - Start, native, milli_seconds),
+            io:format("The Pid ~p has exited with [~p], total duration of: ~p ms !~n", [Pid, Why, Duration])
+    after
+        Time * 1000 ->
+            exit(Pid, timeout)
+    end.
 
 %% Utility code
 
