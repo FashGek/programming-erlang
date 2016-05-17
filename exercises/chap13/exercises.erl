@@ -10,6 +10,12 @@
 
 -export([die_after/1]).
 
+-export([test_ex4/0]).
+-export([monitor_respawn/3]).
+-export([monitor_respawn_start/3]).
+
+-export([im_still_running/0]).
+
 
 %% Exercise 1
 
@@ -58,6 +64,31 @@ my_spawn_monitor(Mod, Func, Args, Time) ->
             exit(Pid, timeout)
     end.
 
+%% Exercise 4
+
+test_ex4() ->
+    monitor_respawn(?MODULE, im_still_running, []),
+    timer:sleep(1000),
+    Pid = whereis(im_still_running),
+    io:format("Current Pid is: ~p~n", [Pid]),
+    timer:sleep(12000),
+    exit(Pid, crash),
+    timer:sleep(1000),
+    NewPid = whereis(im_still_running),
+    io:format("New Pid is: ~p~n", [NewPid]).
+
+monitor_respawn(Mod, Fun, Args) ->
+    spawn(?MODULE, monitor_respawn_start, [Mod, Fun, Args]).
+
+monitor_respawn_start(Mod, Fun, Args) ->
+    {Pid, Ref} = spawn_monitor(Mod, Fun, Args),
+    register(im_still_running, Pid),
+    receive
+        {'DOWN', Ref, process, Pid, _Why} ->
+            io:format("Re-spawning process ...~n", []),
+            monitor_respawn_start(Mod, Fun, Args)
+    end.
+
 %% Utility code
 
 die_after(Timeout) ->
@@ -67,4 +98,12 @@ die_after(Timeout) ->
         Timeout ->
             io:format("I'm down with PID: [~p]~n", [self()]),
             done
+    end.
+
+im_still_running() ->
+    io:format("I'm still running~n"),
+    receive
+    after
+        5000 ->
+            im_still_running()
     end.
