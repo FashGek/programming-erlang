@@ -14,6 +14,10 @@
 -export([monitor_respawn/3]).
 -export([monitor_respawn_start/3]).
 
+-export([monitor_fleet_start/1]).
+-export([respawn/3]).
+-export([test_ex5/0]).
+
 -export([im_still_running/0]).
 
 
@@ -89,14 +93,37 @@ monitor_respawn(Mod, Fun, Args) ->
             monitor_respawn(Mod, Fun, Args)
     end.
 
+%% Exercise 5
+
+monitor_fleet_start(Funs) ->
+    [spawn(?MODULE, respawn, [Mod, Fun, Args]) || {Mod, Fun, Args} <- Funs].
+
+respawn(Mod, Fun, Args) ->
+    {Pid, Ref} = spawn_monitor(Mod, Fun, Args),
+    receive
+        {'DOWN', Ref, process, Pid, _Why} ->
+            io:format("Re-spawning process ...~n", []),
+            respawn(Mod, Fun, Args)
+    end.
+
+test_ex5() ->
+    Funs = [
+            {?MODULE, die_after, [2000]},
+            {?MODULE, die_after, [4000]},
+            {?MODULE, die_after, [6000]},
+            {?MODULE, die_after, [7000]},
+            {?MODULE, die_after, [8000]}
+           ],
+    monitor_fleet_start(Funs).
+
 %% Utility code
 
 die_after(Timeout) ->
-    io:format("I'm up with PID: [~p]~n", [self()]),
+    io:format("I'm up with PID: [~p] / timeout: [~pms]~n", [self(), Timeout]),
     receive
     after
         Timeout ->
-            io:format("I'm down with PID: [~p]~n", [self()]),
+            io:format("I'm down with PID: [~p] / after [~p]ms~n", [self(), Timeout]),
             done
     end.
 
