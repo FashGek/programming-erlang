@@ -18,6 +18,10 @@
 -export([respawn/3]).
 -export([test_ex5/0]).
 
+-export([one_for_all_start/1]).
+-export([one_for_all/1]).
+-export([test_ex6/0]).
+
 -export([im_still_running/0]).
 
 
@@ -101,8 +105,8 @@ monitor_fleet_start(Funs) ->
 respawn(Mod, Fun, Args) ->
     {Pid, Ref} = spawn_monitor(Mod, Fun, Args),
     receive
-        {'DOWN', Ref, process, Pid, _Why} ->
-            io:format("Re-spawning process ...~n", []),
+        {'DOWN', Ref, process, Pid, Why} ->
+            io:format("Re-spawning process that exited with: ~p~n", [Why]),
             respawn(Mod, Fun, Args)
     end.
 
@@ -116,6 +120,27 @@ test_ex5() ->
            ],
     monitor_fleet_start(Funs).
 
+%% Exercise 6
+
+one_for_all_start(Funs) ->
+    spawn(?MODULE, respawn, [?MODULE, one_for_all, [Funs]]).
+
+one_for_all(Funs) ->
+    [spawn_link(Mod, Fun, Args) || {Mod, Fun, Args} <- Funs],
+    receive
+        _ -> continue
+    end.
+
+test_ex6() ->
+    Funs = [
+            {?MODULE, die_after, [2000]},
+            {?MODULE, die_after, [4000]},
+            {?MODULE, die_after, [6000]},
+            {?MODULE, die_after, [7000]},
+            {?MODULE, die_after, [8000]}
+           ],
+    one_for_all_start(Funs).
+
 %% Utility code
 
 die_after(Timeout) ->
@@ -123,8 +148,8 @@ die_after(Timeout) ->
     receive
     after
         Timeout ->
-            io:format("I'm down with PID: [~p] / after [~p]ms~n", [self(), Timeout]),
-            done
+            io:format("I'm died with PID: [~p] / after [~p]ms~n", [self(), Timeout]),
+            exit(im_died)
     end.
 
 im_still_running() ->
