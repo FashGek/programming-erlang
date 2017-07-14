@@ -2,4 +2,5 @@
 
 # programming erlang 2nd edition source code
 jaerlang2-code.tgz
-code/
+code/*.dump
+code
